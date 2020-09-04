@@ -933,6 +933,7 @@ aside {
 .hash-module {
     padding: 1em;
     border: 1px;
+    border: 1px solid #ddd;
     background-color: #fff;
     display: flex;
     flex-wrap: wrap;

@@ -15,6 +15,11 @@ class App {
 
             this.ws = new Workspace(this);
 
+            let artworks = await( fetch("/json/craftworks.json").then(res => res.json()) );
+            console.log(artworks);
+            let tags = artworks.reduce((p, c) => [...p, ...c.hash_tags.map(tag => tag.substr(1))], []);
+            this.entryModule = new HashModule("#entry-module", tags);
+
             this.setEvents();
         });
     }
@@ -32,9 +37,9 @@ class App {
 
         let $menus = $(`<div class="context-menu" style="left: ${x}px; top: ${y}px;"></div>`);
 
-        menus.forEach((name, onclick) => {
+        menus.forEach(({name, onclick}) => {
             let $menu = $(`<div class="context-menu__item">${name}</div>`);
-            $menu.on("click", onclick);
+            $menu.on("mousedown", onclick);
             $menus.append( $menu );
         });
 
@@ -50,7 +55,11 @@ class App {
         $("[data-role].tool__item").on("click", e => {
             $(".tool__item").removeClass("active");
             let role = e.currentTarget.dataset.role;
-            this.ws.tool && this.ws.tool.cancel && this.ws.tool.cancel();
+
+            if(this.ws.tool){
+                this.ws.tool.cancel && this.ws.tool.cancel();
+                this.ws.tool.unselectAll();
+            }
 
             if(this.ws.selected !== role){
                 e.currentTarget.classList.add("active");
@@ -60,27 +69,37 @@ class App {
             }
         });
 
+        
+        $(".btn-delete").on("mousedown", e => {
+            if(this.ws.selected === 'select' && this.ws.tool.selected){
+                this.ws.parts = this.ws.parts.filter(part => part !== this.ws.tool.selected);
+                this.ws.tool.unselectAll();
+            } else {
+                alert("한지를 선택해 주세요.");
+            }
+        });
+
 
         $("[data-target='#add-modal']").on("click", e => {
-            $("#add-modal").html( this.inventory.map(item => `<div class="col-lg-4">
+            $("#add-modal .row").html( this.inventory.map(item => `<div class="col-lg-4">
                                                                     <div class="item bg-white border" data-id="${item.id}">
                                                                         <img src="${item.image}" alt="한지 이미지" class="hx-300 fit-cover">
                                                                         <div class="p-3 border-top">
                                                                             <div class="fx-3">${item.paper_name}</div>
                                                                             <div class="mt-2">
                                                                                 <span class="fx-n2 text-muted">사이즈</span>
-                                                                                <div class="fx-n1 ml-2">${item.width_size}px × ${item.height_size}px</div>
+                                                                                <span class="fx-n1 ml-2">${item.width_size}px × ${item.height_size}px</span>
                                                                             </div>
                                                                             <div class="mt-2">
                                                                                 <span class="fx-n2 text-muted">소지수량</span>
-                                                                                <div class="fx-n1 ml-2">${item.hasCount}</div>
+                                                                                <span class="fx-n1 ml-2">${item.hasCount}</span>
                                                                             </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>`).join('') );
         });
 
-        $("#add-modal").on("click", "item", e => {
+        $("#add-modal").on("click", ".item", e => {
             let item = this.inventory.find(item => item.id == e.currentTarget.dataset.id);
             item.hasCount--;
 

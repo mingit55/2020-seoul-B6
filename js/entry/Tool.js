@@ -12,7 +12,7 @@ class Tool {
         let x = pageX - left;
         x = x < 0 ? 0 : x > width ? width : x;
         let y = pageY - top;
-        y = y < 0 ? 0 : y > height ? height : x;
+        y = y < 0 ? 0 : y > height ? height : y;
 
         return [x, y];
     }
@@ -23,10 +23,9 @@ class Tool {
         for(let i = this.ws.parts.length - 1; i >= 0; i--){
             let part = this.ws.parts[i];
 
-            if(part.src.getColor(x, y)){
+            if(part.src.getColor(x - part.x, y - part.y)){
                 this.ws.parts.splice(i, 1);
                 this.ws.parts.push(part);
-
                 return part;
             }
         }
@@ -37,5 +36,12 @@ class Tool {
     unselectAll(){
         this.ws.parts.forEach(part => part.active = false);
         this.selected = null;
+    }
+
+    createCanvas(width, height){
+        let canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        return canvas;
     }
 }

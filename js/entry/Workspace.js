@@ -25,14 +25,14 @@ class Workspace {
     }
     
     get tool(){
-        return this.tools[this.seleted];
+        return this.tools[this.selected];
     }
 
     async addPart({imageURL, width, height}){
         let image = await new Promise(res => {
             let img = new Image();
             img.src = imageURL;
-            image.onload = () => res(img);
+            img.onload = () => res(img);
         });
 
         let canvas = document.createElement("canvas");
@@ -49,9 +49,9 @@ class Workspace {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.parts.forEach(part => {
-            this.ctx.update();
+            part.update();
             this.ctx.drawImage(part.canvas, part.x, part.y);
-            this.ctx.strokeRect(part.x, part.y, part.src.width, part.src.height);
+            // this.ctx.strokeRect(part.x, part.y, part.src.width, part.src.height);
         });
 
         this.ctx.drawImage(this.sliced, 0, 0);
